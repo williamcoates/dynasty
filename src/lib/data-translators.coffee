@@ -66,7 +66,10 @@ toDynamo = (item) ->
       'N': item.toString()
   else if _.isString item
     obj =
-      'S': item
+      if item.trim().length is 0
+        NULL: true
+      else
+        S: item
   else if _.isBoolean item
     obj =
       'BOOL': item

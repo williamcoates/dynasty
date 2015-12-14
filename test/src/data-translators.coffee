@@ -25,6 +25,10 @@ describe 'toDynamo()', () ->
     expect(converted).to.deep.equal
       'S': str
 
+  it 'converts an empty string to null', () ->
+    expect(dataTrans.toDynamo(' ')).to.deep.equal
+      NULL: true
+
   it 'looks right when given a long string', () ->
     str = chance.string
       length: 1025
