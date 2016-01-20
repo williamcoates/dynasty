@@ -167,7 +167,12 @@ module.exports.updateItem = (params, obj, options, callback, keySchema) ->
   expressionAttributeNames["##{key}"] = key for key, i in Object.keys(obj)
 
   # Set up the Update Expression
-  updateExpression = 'SET ' + _.keys(_.mapKeys obj, (value, key) -> "##{key} = :#{key}").join ','
+  calcUpdateExpression = (value, key) ->
+    if options?.incrementNumber
+      "##{key} = ##{key} + :#{key}"
+    else
+      "##{key} = :#{key}"
+  updateExpression = 'SET ' + _.keys(_.mapKeys obj, calcUpdateExpression).join ','
 
   awsParams =
     TableName: @name

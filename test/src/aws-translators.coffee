@@ -445,6 +445,7 @@ describe 'aws-translators', () ->
 
     dynastyTable = null
     sandbox = null
+    updateSpy = null
 
     beforeEach () ->
       sandbox = sinon.sandbox.create()
@@ -455,17 +456,36 @@ describe 'aws-translators', () ->
             updateItemAsync: (params, callback) ->
               Promise.resolve('lol')
           }
+      updateSpy = sandbox.spy(dynastyTable.parent.dynamo, "updateItemAsync")
 
     afterEach () ->
       sandbox.restore()
 
 
     it 'should automatically setup ExpressionAttributeNames mapping', () ->
-      sandbox.spy(dynastyTable.parent.dynamo, "updateItemAsync")
       promise = lib.updateItem.call(dynastyTable, {}, foo: 'bar', null, null,
         hashKeyName: 'bar'
         hashKeyType: 'S'
       )
-      expect(dynastyTable.parent.dynamo.updateItemAsync.calledOnce)
-      params = dynastyTable.parent.dynamo.updateItemAsync.getCall(0).args[0]
-      expect(params.ExpressionAttributeNames).to.be.eql({"#foo": 'foo'})
+      expect(updateSpy.calledOnce)
+      expect(updateSpy.getCall(0).args[0].ExpressionAttributeNames).to.eql({"#foo": 'foo'})
+
+    it 'should allow incrementing numbers with option incrementNumber', () ->
+      promise = lib.updateItem.call(dynastyTable, {}, foo: 1, {incrementNumber: true}, null,
+        hashKeyName: 'bar'
+        hashKeyType: 'S'
+      )
+      expect(updateSpy.calledOnce)
+      params = updateSpy.getCall(0).args[0]
+      expect(params.ExpressionAttributeValues).to.eql({":foo": {'N': '1'}})
+      expect(params.UpdateExpression).to.eql("SET #foo = #foo + :foo")
+
+    it 'should allow decrementing numbers with option incrementNumber', () ->
+      promise = lib.updateItem.call(dynastyTable, {}, foo: -5, {incrementNumber: true}, null,
+        hashKeyName: 'bar'
+        hashKeyType: 'S'
+      )
+      expect(updateSpy.calledOnce)
+      params = updateSpy.getCall(0).args[0]
+      expect(params.ExpressionAttributeValues).to.eql({":foo": {'N': '-5'}})
+      expect(params.UpdateExpression).to.eql("SET #foo = #foo + :foo")
