@@ -34,6 +34,10 @@ class Table
     debug "scan() - #{params}"
     @key.then awsTrans.scan.bind(this, params, options, callback)
 
+  scanPaged: (params, options = {}, callback = null) ->
+    debug "scanPaged() - #{params}"
+    @key.then awsTrans.scanPaged.bind(this, params, options, callback)
+
   # Wrapper around DynamoDB's query
   query: (params, options = {}, callback = null) ->
     debug "query() - #{params}"

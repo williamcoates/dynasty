@@ -130,6 +130,36 @@ module.exports.scan = (params, options, callback, keySchema) ->
       dataTrans.fromDynamo(data.Items)
     .nodeify(callback)
 
+module.exports.scanPaged = (params, options, callback, keySchema) ->
+  params ?= {}
+  awsParams =
+    TableName: @name
+    ScanFilter: {}
+    Select: 'SPECIFIC_ATTRIBUTES'
+    AttributesToGet: params.attrsGet || [keySchema.hashKeyName]
+    Limit: params.limit
+    TotalSegments: params.totalSegment
+    Segment: params.segment
+
+  if params.exclusiveStartKey
+    awsValue = {}
+    for key, value of params.exclusiveStartKey
+      awsValue[key] = dataTrans.toDynamo(params.exclusiveStartKey[key])
+    awsParams.ExclusiveStartKey = awsValue
+
+  buildFilters(awsParams.ScanFilter, params.filters)
+
+  @parent.dynamo.scanAsync(awsParams)
+    .then (data)->
+      lastEvaluatedKey = dataTrans.fromDynamo(data.LastEvaluatedKey)
+      res =
+        items: dataTrans.fromDynamo(data.Items)
+        count: data.Count
+      if lastEvaluatedKey
+        res.lastEvaluatedKey = lastEvaluatedKey
+      res
+    .nodeify(callback)
+
 module.exports.query = (params, options, callback, keySchema) ->
   params ?= {}
   awsParams =
