@@ -14,6 +14,13 @@ scanFilterFunc = (target, filter) ->
   target[filter.column].AttributeValueList[0][filter.type || 'S'] = filter.value
   target
 
+buildExclusiveStartKey = (awsParams, params) ->
+  if params.exclusiveStartKey
+    awsValue = {}
+    for key, value of params.exclusiveStartKey
+      awsValue[key] = dataTrans.toDynamo(params.exclusiveStartKey[key])
+    awsParams.ExclusiveStartKey = awsValue
+
 module.exports.processAllPages = (deferred, dynamo, functionName, params)->
 
   stats =
@@ -117,11 +124,11 @@ module.exports.scan = (params, options, callback, keySchema) ->
   awsParams =
     TableName: @name
     ScanFilter: {}
-    Select: 'SPECIFIC_ATTRIBUTES'
-    AttributesToGet: params.attrsGet || [keySchema.hashKeyName]
     Limit: params.limit
     TotalSegments: params.totalSegment
     Segment: params.segment
+
+  awsParams.AttributesToGet = params.attrsGet if params.attrsGet
 
   buildFilters(awsParams.ScanFilter, params.filters)
 
@@ -141,12 +148,7 @@ module.exports.scanPaged = (params, options, callback, keySchema) ->
     TotalSegments: params.totalSegment
     Segment: params.segment
 
-  if params.exclusiveStartKey
-    awsValue = {}
-    for key, value of params.exclusiveStartKey
-      awsValue[key] = dataTrans.toDynamo(params.exclusiveStartKey[key])
-    awsParams.ExclusiveStartKey = awsValue
-
+  buildExclusiveStartKey(awsParams, params)
   buildFilters(awsParams.ScanFilter, params.filters)
 
   @parent.dynamo.scanAsync(awsParams)
@@ -167,6 +169,7 @@ module.exports.query = (params, options, callback, keySchema) ->
     IndexName: params.indexName
     KeyConditions: {}
     QueryFilter: {}
+  awsParams.AttributesToGet = params.attrsGet if params.attrsGet
 
   buildFilters(awsParams.KeyConditions, params.keyConditions)
   buildFilters(awsParams.QueryFilter, params.filters)
@@ -175,6 +178,33 @@ module.exports.query = (params, options, callback, keySchema) ->
     .then (data) ->
       dataTrans.fromDynamo(data.Items)
     .nodeify(callback)
+
+module.exports.queryPaged = (params, options, callback, keySchema) ->
+  params ?= {}
+  awsParams =
+    TableName: @name
+    IndexName: params.indexName
+    KeyConditions: {}
+    QueryFilter: {}
+  awsParams.AttributesToGet = params.attrsGet if params.attrsGet
+
+  buildExclusiveStartKey(awsParams, params)
+  buildFilters(awsParams.KeyConditions, params.keyConditions)
+  buildFilters(awsParams.QueryFilter, params.filters)
+
+
+
+  @parent.dynamo.queryAsync(awsParams)
+    .then (data)->
+      lastEvaluatedKey = dataTrans.fromDynamo(data.LastEvaluatedKey)
+      res =
+        items: dataTrans.fromDynamo(data.Items)
+        count: data.Count
+      if lastEvaluatedKey
+        res.lastEvaluatedKey = lastEvaluatedKey
+      res
+    .nodeify(callback)
+
 
 module.exports.putItem = (obj, options, callback) ->
   awsParams =

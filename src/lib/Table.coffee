@@ -43,6 +43,12 @@ class Table
     debug "query() - #{params}"
     @key.then awsTrans.query.bind(this, params, options, callback)
 
+  # Wrapper around DynamoDB's query
+  queryPaged: (params, options = {}, callback = null) ->
+    debug "query() - #{params}"
+    @key.then awsTrans.queryPaged.bind(this, params, options, callback)
+
+
   # Wrapper around DynamoDB's putItem
   insert: (obj, options = {}, callback = null) ->
     debug "insert() - " + JSON.stringify obj
