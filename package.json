@@ -62,7 +62,7 @@
     "database"
   ],
   "dependencies": {
-    "aws-sdk": "^2.1.0",
+    "aws-sdk": "^2.2.32",
     "bluebird": "^2.3.11",
     "coffee-script": "^1.6.3",
     "debug": "^2.1.0",
