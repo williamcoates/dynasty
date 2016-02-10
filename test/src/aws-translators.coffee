@@ -478,7 +478,7 @@ describe 'aws-translators', () ->
       expect(updateSpy.calledOnce)
       params = updateSpy.getCall(0).args[0]
       expect(params.ExpressionAttributeValues).to.eql({":foo": {'N': '1'}})
-      expect(params.UpdateExpression).to.eql("SET #foo = #foo + :foo")
+      expect(params.UpdateExpression).to.eql("ADD #foo :foo")
 
     it 'should allow decrementing numbers with option incrementNumber', () ->
       promise = lib.updateItem.call(dynastyTable, {}, foo: -5, {incrementNumber: true}, null,
@@ -488,4 +488,4 @@ describe 'aws-translators', () ->
       expect(updateSpy.calledOnce)
       params = updateSpy.getCall(0).args[0]
       expect(params.ExpressionAttributeValues).to.eql({":foo": {'N': '-5'}})
-      expect(params.UpdateExpression).to.eql("SET #foo = #foo + :foo")
+      expect(params.UpdateExpression).to.eql("ADD #foo :foo")
