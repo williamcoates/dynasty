@@ -219,7 +219,11 @@ module.exports.updateItem = (params, obj, options, callback, keySchema) ->
 
   # Set up the Expression Attribute Values map.
   expressionAttributeValues = _.mapKeys obj, (value, key) -> return ':' + key
-  expressionAttributeValues = _.mapValues expressionAttributeValues, (value, key) -> return dataTrans.toDynamo value
+  expressionAttributeValues = _.mapValues expressionAttributeValues, (value, key) -> dataTrans.toDynamo(value)
+  # Allow setting arbitrary attribute values
+  if options?.expressionAttributeValues
+    options.expressionAttributeValues = _.mapValues options.expressionAttributeValues, (value, key) -> dataTrans.toDynamo(value)
+    _.extend(expressionAttributeValues, options.expressionAttributeValues)
 
   # Setup ExpressionAttributeNames mapping key -> #key so we don't bump into
   # reserved words
@@ -241,4 +245,7 @@ module.exports.updateItem = (params, obj, options, callback, keySchema) ->
     ExpressionAttributeNames: expressionAttributeNames
     ExpressionAttributeValues: expressionAttributeValues
     UpdateExpression: updateExpression
+
+  if options?.conditionExpression
+    awsParams.ConditionExpression = options.conditionExpression
   @parent.dynamo.updateItemAsync(awsParams)
