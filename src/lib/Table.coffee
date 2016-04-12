@@ -38,6 +38,11 @@ class Table
     debug "scanPaged() - #{params}"
     @key.then awsTrans.scanPaged.bind(this, params, options, callback)
 
+  # Will call scan, page through each page and return all results
+  scanAll: (params, options = {}, callback = null) ->
+    debug "scanAll() - #{params}"
+    @key.then awsTrans.scanAll.bind(this, params, options, callback)
+
   # Wrapper around DynamoDB's query
   query: (params, options = {}, callback = null) ->
     debug "query() - #{params}"

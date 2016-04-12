@@ -142,11 +142,12 @@ module.exports.scanPaged = (params, options, callback, keySchema) ->
   awsParams =
     TableName: @name
     ScanFilter: {}
-    Select: 'SPECIFIC_ATTRIBUTES'
-    AttributesToGet: params.attrsGet || [keySchema.hashKeyName]
     Limit: params.limit
     TotalSegments: params.totalSegment
     Segment: params.segment
+
+  awsParams.AttributesToGet = params.attrsGet if params.attrsGet
+
 
   buildExclusiveStartKey(awsParams, params)
   buildFilters(awsParams.ScanFilter, params.filters)
@@ -161,6 +162,23 @@ module.exports.scanPaged = (params, options, callback, keySchema) ->
         res.lastEvaluatedKey = lastEvaluatedKey
       res
     .nodeify(callback)
+
+module.exports.scanAll = (params, options, callback, keySchema) ->
+  items = []
+  page = 0
+  scanNext = (exclusiveStartKey) =>
+    page++
+    if exclusiveStartKey?
+      options.exclusiveStartKey = exclusiveStartKey
+    #console.log("Scanning page #{page} (#{items.length} fetched so far)")
+    @scanPaged(params, options, callback)
+      .then (res) ->
+        items = items.concat(res.items)
+        if res.lastEvaluatedKey
+          scanNext(exclusiveStartKey)
+        else
+          items
+  scanNext()
 
 module.exports.query = (params, options, callback, keySchema) ->
   params ?= {}
