@@ -1,0 +1,9 @@
+<h1>Conditional Delete</h1>
+
+<form name="myForm">
+Table Name:
+<input name="table" ng-model="vm.table" required/>
+Key Name:
+<input name="key" ng-model="vm.key" required/>
+<button ng-disabled="!myForm.table.$valid || !myForm.key.$valid" ng-click="vm.conditionalDelete()">Conditional Delete</button>
+</form>

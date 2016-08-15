@@ -1,0 +1,31 @@
+{
+  "name": "dynasty",
+  "description": "Dynasty - Promise-based DynamoDB API",
+  "main": "lib/dynasty.js",
+  "authors": [
+    "Mike Atkins (https://github.com/apechimp)",
+    "Ben McIlwain (https://github.com/cydeweys)",
+    "Tim Huff (https://github.com/timhuff)"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "dynamodb",
+    "aws",
+    "amazon",
+    "promise",
+    "dynasty",
+    "database"
+  ],
+  "homepage": "https://github.com/achilleshero/dynasty",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.5.8",
+    "angular-route": "^1.5.8"
+  }
+}
