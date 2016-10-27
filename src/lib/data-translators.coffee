@@ -47,29 +47,26 @@ module.exports.fromDynamo = fromDynamo
 # See http://vq.io/19EiASB
 toDynamo = (item) ->
   if _.isArray item
-    if item.length > 0 and _.every item, _.isNumber
-      obj =
-        'NS': (num.toString() for num in item)
-    else if item.length > 0 and _.every item, _.isString
-      obj =
-        'SS': item
-    else if _.every item, _.isObject
+    # Check if can be a set
+    if item.length > 0 and (_.uniq(item).length is item.length) and _.every(item, (item) -> _.isNumber(item) or _.isString(item) )
+      if _.every(item, _.isNumber)
+        obj =
+          'NS': (num.toString() for num in item)
+      else if _.every(item, _.isString)
+        obj =
+          'SS': item
+    else
       array = []
       for value in item
         array.push(toDynamo(value))
       obj =
         'L': array
-    else
-      throw new TypeError 'Expected homogenous array of numbers or strings'
   else if _.isNumber item
     obj =
       'N': item.toString()
   else if _.isString item
     obj =
-      if item.trim().length is 0
-        NULL: true
-      else
-        S: item
+      S: item
   else if _.isBoolean item
     obj =
       'BOOL': item
@@ -79,10 +76,9 @@ toDynamo = (item) ->
       map[key] = toDynamo(value)
     obj =
       'M': map
-  else if item is null
+  else if !item?
     obj =
       'NULL': true
-  else if not item
-    throw new TypeError "toDynamo() does not support mapping #{util.inspect(item)}"
+
 
 module.exports.toDynamo = toDynamo

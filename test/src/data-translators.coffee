@@ -7,10 +7,6 @@ dataTrans = require('../lib/lib')['data-translators']
 
 describe 'toDynamo()', () ->
 
-  it 'should throw an error if called with no arguments', () ->
-    expect(() -> dataTrans.toDynamo()).to.
-      throw(/does not support mapping undefined/)
-
   it 'looks right when given a number', () ->
     num = chance.integer()
     converted = dataTrans.toDynamo num
@@ -25,9 +21,9 @@ describe 'toDynamo()', () ->
     expect(converted).to.deep.equal
       'S': str
 
-  it 'converts an empty string to null', () ->
+  it 'doesnt touch an empty string', () ->
     expect(dataTrans.toDynamo(' ')).to.deep.equal
-      NULL: true
+      S: ' '
 
   it 'looks right when given a long string', () ->
     str = chance.string
@@ -73,15 +69,23 @@ describe 'toDynamo()', () ->
       L: []
     )
 
-  it 'should throw an error when given a hetrogeneous array', () ->
-    arr = []
-    _.times 10, (n) ->
-      if n % 2
-        arr.push chance.string()
-      else
-        arr.push chance.integer()
-    expect(() -> dataTrans.toDynamo(arr)).to.
-      throw('Expected homogenous array of numbers or strings')
+  it 'converts an array of strings with dupes to a list', () ->
+    expect(dataTrans.toDynamo(['1', '1'])).to.eql(
+      L: [
+        S: '1'
+      ,
+        S: '1'
+      ]
+    )
+
+  it 'converts an array of numbers with duplicates to a list', () ->
+    expect(dataTrans.toDynamo([1, 1])).to.eql(
+      L: [
+        N: '1'
+      ,
+        N: '1'
+      ]
+    )
 
   it 'supports null values', () ->
     expect(dataTrans.toDynamo({foo: null})).to.deep.equal
@@ -89,8 +93,11 @@ describe 'toDynamo()', () ->
         foo:
           'NULL': true
 
-  it 'throws an error for undefined values', () ->
-    expect(-> dataTrans.toDynamo({foo: undefined})).to.throw(/does not support mapping undefined/)
+  it 'converts undefined to null', () ->
+    expect(dataTrans.toDynamo({foo: undefined})).to.deep.equal
+      'M':
+        foo:
+          'NULL': true
 
 describe 'fromDynamo()', () ->
 
