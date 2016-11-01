@@ -21,7 +21,11 @@ describe 'toDynamo()', () ->
     expect(converted).to.deep.equal
       'S': str
 
-  it 'doesnt touch an empty string', () ->
+  it 'converts an empty string to null', () ->
+    expect(dataTrans.toDynamo('')).to.deep.equal
+      NULL: true
+
+  it 'allows non empty strings', () ->
     expect(dataTrans.toDynamo(' ')).to.deep.equal
       S: ' '
 
@@ -75,6 +79,15 @@ describe 'toDynamo()', () ->
         S: '1'
       ,
         S: '1'
+      ]
+    )
+
+  it 'deals with an array with empty strings', () ->
+    expect(dataTrans.toDynamo(['', ' '])).to.eql(
+      L: [
+        NULL: true
+      ,
+        S: ' '
       ]
     )
 
