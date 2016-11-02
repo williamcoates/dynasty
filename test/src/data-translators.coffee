@@ -45,16 +45,28 @@ describe 'toDynamo()', () ->
     converted = dataTrans.toDynamo arr
     expect(converted).to.be.an 'object'
     expect(converted).to.deep.equal
-      NS: ['0', '1', '2', '3']
+      L: [
+        N: '0'
+      ,
+        N: '1'
+      ,
+        N: '2'
+      ,
+        N: '3'
+      ]
 
   it 'looks right when given an array of strings', () ->
-    arr = []
-    _.times 10, () ->
-      arr.push chance.string()
+    arr = ['woof', 'miow', 'foo']
     converted = dataTrans.toDynamo arr
     expect(converted).to.be.an 'object'
     expect(converted).to.deep.equal
-      'SS': arr
+      L: [
+        S: 'woof'
+      ,
+        S: 'miow'
+      ,
+        S: 'foo'
+      ]
 
   it 'looks right when given an array of objects', () ->
     arr = [{foo: 'bar'}, {bar: 'foo'}]
@@ -66,7 +78,26 @@ describe 'toDynamo()', () ->
     arr = [{foo: [1,2,3]}, {bar: {amazon: 'aws'}}]
     converted = dataTrans.toDynamo arr
     expect(converted).to.be.an 'object'
-    expect(converted).to.eql({ L: [{M: {foo: {NS: ['1', '2', '3']}}},{M: {bar: {M: {amazon: {S: 'aws'}}}}}]})
+    expect(converted).to.eql(
+      L:
+        [
+          M:
+            foo:
+              L: [
+                N:'1'
+              ,
+                N: '2'
+              ,
+                N: '3'
+              ]
+        ,
+          M:
+            bar:
+              M:
+                amazon:
+                  S: 'aws'
+        ]
+    )
 
   it 'converts an empty array to a list', () ->
     expect(dataTrans.toDynamo([])).to.eql(

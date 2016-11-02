@@ -47,20 +47,12 @@ module.exports.fromDynamo = fromDynamo
 # See http://vq.io/19EiASB
 toDynamo = (item) ->
   if _.isArray item
-    # Check if can be a set
-    if item.length > 0 and (_.uniq(item).length is item.length) and _.every(item, (item) -> _.isNumber(item) or (_.isString(item) and item.length > 0))
-      if _.every(item, _.isNumber)
-        obj =
-          'NS': (num.toString() for num in item)
-      else if _.every(item, _.isString)
-        obj =
-          'SS': item
-    else
-      array = []
-      for value in item
-        array.push(toDynamo(value))
-      obj =
-        'L': array
+    # We always use lists for arrays. Sets are too problematic as they are not ordered. 
+    array = []
+    for value in item
+      array.push(toDynamo(value))
+    obj =
+      'L': array
   else if _.isNumber item
     obj =
       'N': item.toString()
