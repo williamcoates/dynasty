@@ -174,4 +174,9 @@ class Dynasty
 
     @dynamo.listTablesAsync(awsParams)
 
+  # Useful if for example you are implementing triggers and you are getting
+  # raw dynamo JSON data.
+  convertFromDynamo: (dynamoData) ->
+    lib['data-translators'].fromDynamo(dynamoData)
+
 module.exports = (credentials, url) -> new Dynasty(credentials, url)
