@@ -179,7 +179,7 @@ class Dynasty
   convertFromDynamo: (dynamoData) ->
     lib['data-translators'].fromDynamo(dynamoData)
 
-  convertToDynamo: (dynamoData) ->
-    lib['data-translators'].toDynamo(dynamoData)
+  convertToDynamo: (data) ->
+    lib['data-translators'].toDynamo(data)
 
 module.exports = (credentials, url) -> new Dynasty(credentials, url)
